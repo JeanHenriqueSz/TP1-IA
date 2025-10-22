@@ -1,4 +1,39 @@
 import random
+import os
+
+# Função para carregar uma instância específica
+def load_instance(filename):
+    items = []
+    with open(filename, "r") as file:
+        capacity = int(file.readline().strip())  # primeira linha
+        num_items = int(file.readline().strip()) # segunda linha
+        for _ in range(num_items):
+            line = file.readline().strip()
+            name, weight, value = line.split(",")
+            items.append(Item(int(weight), int(value)))
+    return capacity, items
+
+# Função para carregar todas as instâncias em uma pasta
+
+def carregar_todas_instancias():
+    instancias = {}
+
+    # Pega o caminho da pasta onde o script está
+    pasta_script = os.path.dirname(os.path.abspath(__file__))
+    
+    # Caminho completo da pasta instancias
+    pasta_instancias = os.path.join(pasta_script, "instancias")
+
+    # Lê todos os arquivos da pasta
+    for arquivo in os.listdir(pasta_instancias):
+        if arquivo.lower().endswith(".txt"):
+            caminho = os.path.join(pasta_instancias, arquivo)
+            capacidade, itens = load_instance(caminho)
+            instancias[arquivo] = (capacidade, itens)  # mantém a extensão como chave
+    return instancias
+
+
+
 
 class Item:
     def __init__(self, weight, value):
@@ -7,14 +42,14 @@ class Item:
 
 def main():
     # Exemplo de itens e capacidade da mochila
-    items = [
-        Item(2, 10),
-        Item(3, 7),
-        Item(4, 14),
-        Item(5, 5),
-        Item(6, 3)
-    ]
-    capacity = 10
+    # Carregar todas as instâncias da pasta "instancias"
+    instancias = carregar_todas_instancias()
+
+    # Escolha da instância (basta mudar este nome para testar outras)
+    instancia_escolhida = "KNAPDATA40.txt"  # exemplo
+
+    capacity, items = instancias[instancia_escolhida]
+
 
     # Parâmetros do algoritmo genético
     population_size = 50
@@ -85,16 +120,23 @@ def roulette_selection(population, items, capacity):
 
 # Função para realizar o cruzamento (crossover)
 def crossover(parent1, parent2, crossover_rate):
-    # Completar a função de cruzamento
-    # Retorna um novo indivíduo resultante do crossover entre parent1 e parent2
-    # Não esqueça da probabiidade de cruzamento
-    return 0
+    # Com probabilidade menor que a taxa, fazemos o crossover
+    if random.random() < crossover_rate:
+        # Escolhemos um ponto de corte entre 1 e len(parent1)-1
+        point = random.randint(1, len(parent1) - 1)
+        # Combina os genes do pai e da mãe
+        offspring = parent1[:point] + parent2[point:]
+    else:
+        # Caso contrário, apenas copia o parent1
+        offspring = parent1.copy()
+    return offspring
 
 # Função para realizar a mutação
 def mutate(solution, mutation_rate):
-    # Completar a função de mutação
-    # Aplica a mutação na solução fornecida
-    # Não esqueça da probabiidade de mutação
+    for i in range(len(solution)):
+        if random.random() < mutation_rate:
+            # Inverte o bit (0 -> 1, 1 -> 0)
+            solution[i] = 1 - solution[i]
 
 
 if __name__ == "__main__":
